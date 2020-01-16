@@ -1,0 +1,31 @@
+Ryan Yung
+A12948496
+
+I am not competing for the George Varghese Espresso prize.
+
+The design and flow of my router followed the information presented in the various discussion slides, which featured flow charts for the algorithms and step by step instructions on how to implement functionality. Additionally, numerous Piazza posts helped me with smaller details like iterating through interfaces and doing longest prefix match. 
+
+My router handles packets starting in sr_router.c.
+Here it identifies whether or not the packet is an ARP or IP packet.
+If it is an ARP packet, it is handled in sr_arp.c.
+In sr_arp.c, there is one method which handles both the ARP request and ARP reply cases based on if statements.
+In the case of ARP if it is a request it preps a packet and send it out.
+If it is a reply, it inserts it into the cache then if there was an arp request waiting, it sends out all the packets waiting on the request.
+
+If the packet was an IP packet, it gets handled in sr_ip.c.
+Here it does validation on the IP packet, and then checks whether the packet is destined for this router or not.
+If it was, then it checks what type of packet it was.
+If it is not an ICMP packet, it sends out a ICMP type 3 message.
+If it was an ICMP packet, it then checks if it was an echo request, and will send an echo reply if necessary.
+And if the packet was not destined for this router, it does packet forwarding.
+To forward the packet, it uses longest prefix match to find the next hop address, then either sends an ICMP type 3, or looks it up in the cache if possible.
+If the receiver was not found, it sends out an arp request for it.
+If it was found, then it will forward the packet to the destination. 
+
+The sending of ICMP packets is handled in sr_icmp.c.
+There are two cases for sending ICMP packets.
+For type 0, it takes the existing packet, modifies values and sends it out.
+For type 3, it creates a new packet, and copies over the relevant fields to the various headers after finding the correct output interface.
+For type 11, it internally calls the send type 3 function but specifying type 11 for the message. 
+
+The only tradeoffs in this design mainly came down to how to handle the logic of types of packets and messages in which order. Ultimately every flow in the flow charts provided in the discussion needed to be handled, but deciding which checks to do first or save for later was difficult. I tried to handle the error cases first before the general cases. I'm not sure what performance impact that has on the router. 
